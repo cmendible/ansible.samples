@@ -1,0 +1,12 @@
+galaxy_info:
+  author: Carlos Mendible
+  description: Password Manager Pro (PMP) Password Lookup
+  license: BSD
+  min_ansible_version: 2.3.2.0
+  platforms:
+  - name: GenericUNIX
+    versions:
+    - any
+  categories:
+  - system
+dependencies: []
