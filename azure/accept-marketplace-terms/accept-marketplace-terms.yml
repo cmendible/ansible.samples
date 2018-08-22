@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars: 
+    subscriptionId: "[REPLACE WITH YOUR OWN VALUES]"
+    az_client_id: "[REPLACE WITH YOUR OWN VALUES]"
+    az_tenant: "[REPLACE WITH YOUR OWN VALUES]"
+    az_secret: "[REPLACE WITH YOUR OWN VALUES]"
+    region: "westeurope"
+    publisher: "paloaltonetworks"
+    offer: "vmseries1"
+    sku: "bundle1"
+  tasks:
+    - name: Get Agreements for given Image parameters
+      azure_rm_resource:
+        subscription_id: "{{ subscriptionId }}"
+        client_id: "{{ az_client_id }}"
+        tenant: "{{ az_tenant }}"
+        secret: "{{ az_secret }}"
+        url: "https://management.azure.com/subscriptions/{{ subscriptionId }}/providers/Microsoft.MarketplaceOrdering/offerTypes/virtualmachine/publishers/{{ publisher }}/offers/{{ offer }}/plans/{{ sku }}/agreements/current?api-version=2015-06-01"
+        method: GET
+        api_version: "2015-06-01"
+      register: agreement_result
+
+    - name: Register Agreement properties as fact
+      set_fact:
+        agreement: "{{ agreement_result.response.properties }}"
+
+    - name: Accept Terms for given Image parameters
+      azure_rm_resource:
+        subscription_id: "{{ subscriptionId }}"
+        client_id: "{{ az_client_id }}"
+        tenant: "{{ az_tenant }}"
+        secret: "{{ az_secret }}"
+        url: "https://management.azure.com/subscriptions/{{ subscriptionId }}/providers/Microsoft.MarketplaceOrdering/offerTypes/virtualmachine/publishers/{{ publisher }}/offers/{{ offer }}/plans/{{ sku }}/agreements/current?api-version=2015-06-01"
+        method: PUT
+        api_version: "2015-06-01"
+        body:
+          properties:
+            publisher: "{{agreement.publisher}}"
+            product: "{{agreement.product}}"
+            plan: "{{agreement.plan}}"
+            licenseTextLink: "{{agreement.licenseTextLink}}"
+            privacyPolicyLink: "{{agreement.privacyPolicyLink}}"
+            retrieveDatetime: "{{agreement.retrieveDatetime}}"
+            signature: "{{agreement.signature}}"
+            accepted: "true"
+      register: result
+      
+    - name: Accept Terms output
+      debug:
+        msg: "{{result}}"
